@@ -1,5 +1,3 @@
-from lib.album import Album
-
 def test_get_all_albums(db_connection, web_client):
     db_connection.seed("seeds/music_library.sql")
     response = web_client.get('/albums')
@@ -67,3 +65,26 @@ def test_post_albums_valid_entry(db_connection, web_client):
         "Album(11, Fodder on My Wings, 1982, 4)\n" \
         "Album(12, Ring Ring, 1973, 2)\n" \
         "Album(13, Voyage, 2022, 2)"
+        
+def test_get_artists(db_connection, web_client):
+    db_connection.seed("seeds/music_library.sql")
+    response = web_client.get('/artists')
+    assert response.status_code == 200
+    assert response.data.decode('utf-8') == "Pixies, ABBA, Taylor Swift, Nina Simone"
+
+"""
+when we run a POST to /artists
+with a new artist
+then we expect a 200 response
+AND we expect the artist to be added to the database
+"""
+def test_add_artist(db_connection, web_client):
+    db_connection.seed("seeds/music_library.sql")
+    post_response = web_client.post('/artists', data={'name' : 'BeeJees', 'genre': 'Funk'})
+    get_response = web_client.get('/artists')
+    assert post_response.status_code == 200
+    assert post_response.data.decode('utf-8') == ''
+    assert get_response.status_code == 200
+    assert get_response.data.decode('utf-8') == "Pixies, ABBA, Taylor Swift, Nina Simone, BeeJees"
+
+
