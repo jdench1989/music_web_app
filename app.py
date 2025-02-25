@@ -1,3 +1,5 @@
+from lib.album_repository import AlbumRepository
+from lib.database_connection import get_flask_database_connection
 import os
 from flask import Flask, request
 
@@ -5,6 +7,25 @@ from flask import Flask, request
 app = Flask(__name__)
 
 # == Your Routes Here ==
+
+@app.route('/albums', methods=['GET'])
+def get_all_albums():
+    connection = get_flask_database_connection(app)
+    repository = AlbumRepository(connection)
+    albums = repository.all()
+    return "\n".join([f"{album}" for album in albums])
+
+@app.route('/albums', methods=['POST'])
+def create_album():
+    if not all(key in request.form for key in ['title', 'release_year', 'artist_id']):
+        return "Must include album title, release_year and artist id.", 400
+    title = request.form['title']
+    release_year = request.form['release_year']
+    artist_id = request.form['artist_id']
+    connection = get_flask_database_connection(app)
+    repository = AlbumRepository(connection)
+    repository.create(title, release_year, artist_id)
+    return "", 200
 
 
 # These lines start the server if you run this file directly
